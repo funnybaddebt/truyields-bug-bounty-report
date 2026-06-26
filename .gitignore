@@ -1,0 +1,11 @@
+# Ignore build / test artifacts
+target/
+out/
+*.swp
+*.swo
+.DS_Store
+
+# Local test outputs (keep only committed PoC results)
+*.log
+tmp/
+*.wasm
