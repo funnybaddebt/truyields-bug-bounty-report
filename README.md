@@ -26,6 +26,9 @@ Full technical details, root cause, reproduction, and mitigation options are in 
 
 [findings/aptos-permanent-freeze.md](findings/aptos-permanent-freeze.md)
 
+**Ready-to-use Immunefi submission text:**
+[reports/aptos-permanent-freeze-submission.md](reports/aptos-permanent-freeze-submission.md)
+
 ## Proof of Concept
 
 A minimal, self-contained reproduction using the official Move test framework is provided here:
