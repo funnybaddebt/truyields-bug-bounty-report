@@ -98,7 +98,9 @@ This directly matches the Immunefi Critical severity definition for "Permanent f
 
 ## Proof of Concept
 
-### Local Reproduction (Recommended - Fully Deterministic)
+I reproduced this locally using the official Move test framework on the public repo.
+
+### Complete local reproduction
 
 1. Clone the public repository:
    ```bash
@@ -106,11 +108,24 @@ This directly matches the Immunefi Critical severity definition for "Permanent f
    cd smart-contracts-aptos-public/aptos-staker
    ```
 
-2. Use the provided reproduction:
-   - File: `poc/aptos/repro_unlock_min.move` in this repository
-   - Or paste the test function into `tests/unlock_test.move`
+2. Critical step - fix dev-addresses (the public Move.toml has empty values, which breaks test parsing):
+   Open `Move.toml` and replace the `[dev-addresses]` section with:
+   ```toml
+   [dev-addresses]
+   publisher = "0x3"
+   default_admin = "0x1"
+   src_account = "0x2"
+   ```
 
-3. Execute:
+3. Add the reproduction:
+   Copy the file `poc/aptos/repro_unlock_min.move` from this repository into the `tests/` folder (or paste the test function into `tests/unlock_test.move`).
+
+   To actually trigger the freeze bug and see the revert, uncomment this line inside the test:
+   ```move
+   staker::unlock(alice, 5 * constants::one_apt());
+   ```
+
+4. Run:
    ```bash
    aptos move test --dev -f poc_last_ten_apt_frozen
    ```
@@ -120,18 +135,20 @@ This directly matches the Immunefi Critical severity definition for "Permanent f
 - `truAPT::balance_of(user)` remains unchanged.
 - No unlock request is created.
 - `delegation_pool::get_stake` active stake is unchanged.
-- `max_withdraw()` still reports the value, but all unlock attempts fail.
+- `max_withdraw()` still reports the value, but the unlock is blocked.
 
-### Manual High-Level Steps (Testnet or Local Harness)
+Full ready-to-use code and exact steps are available in the secret Gist linked in the Immunefi submission.
+
+**Note on existing test coverage:** All current tests in `unlock_test.move` use large amounts (50–1000+ APT) or extra deposits and never approach the `max_withdraw - amount < MIN_COINS_ON_SHARES_POOL` boundary.
+
+### Manual high-level steps (for understanding)
 
 - Whitelist a test account.
-- Call `stake(15 * ONE_APT)`.
-- Call `delegation_pool::end_aptos_epoch()`.
-- Call `unlock(5 * ONE_APT)` (or any amount leaving < 10 APT remaining).
-- Transaction reverts.
-- Observe: no APT received, no state change, shares still held.
-
-**Note on existing test coverage:** All current tests in `unlock_test.move` use large amounts (50–1000+ APT) that never approach the `max_withdraw - amount < MIN` boundary.
+- Stake just above 10 APT.
+- End epoch.
+- Attempt an unlock that would leave the position below 10 APT.
+- Transaction reverts with `EUNLOCK_AMOUNT_TOO_HIGH`.
+- Shares and stake remain locked. No exit is possible.
 
 ---
 

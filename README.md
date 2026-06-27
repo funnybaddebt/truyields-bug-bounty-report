@@ -35,11 +35,17 @@ A minimal, self-contained reproduction using the official Move test framework is
 
 [poc/aptos/repro_unlock_min.move](poc/aptos/repro_unlock_min.move)
 
+**Complete reproduction instructions** (including the required dev-addresses fix in Move.toml) are in the ready-to-use Immunefi submission text:
+
+[reports/aptos-permanent-freeze-submission.md](reports/aptos-permanent-freeze-submission.md)
+
 High-level reproduction:
 1. Stake an amount just above 10 APT as a whitelisted user.
 2. Attempt any unlock that would leave the position below the minimum.
 3. Transaction reverts with `EUNLOCK_AMOUNT_TOO_HIGH`.
 4. Shares and stake remain; no exit is possible.
+
+Full code + exact steps for reviewers are also prepared as a secret Gist for the submission.
 
 ## Scope & Sources
 
